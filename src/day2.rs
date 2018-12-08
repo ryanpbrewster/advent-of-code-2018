@@ -9,6 +9,17 @@ fn counts(xs: Chars) -> HashMap<char, usize> {
     tally
 }
 
+fn pair_that_differ_by(xs: &[String], count: usize) -> Option<(String, String)> {
+    for a in xs {
+        for b in xs {
+            if a.chars().zip(b.chars()).filter(|(ai, bj)| ai != bj).count() == count {
+                return Some((a.clone(), b.clone()));
+            }
+        }
+    }
+    None
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -32,7 +43,13 @@ mod test {
     #[test]
     fn part2() {
         let contents = fs::read_to_string("data/day2/input").expect("read input file");
-        let xyz: i32 = unimplemented!();
-        assert_eq!(xyz, 481);
+        let lines: Vec<String> = contents.lines().map(|s| String::from(s)).collect();
+        let (a, b) = pair_that_differ_by(&lines, 1).unwrap();
+        let common: String = a
+            .chars()
+            .zip(b.chars())
+            .filter_map(|(ai, bj)| if ai == bj { Some(ai) } else { None })
+            .collect();
+        assert_eq!(common, "kbqwtcvzhmhpoelrnaxydifyb");
     }
 }
