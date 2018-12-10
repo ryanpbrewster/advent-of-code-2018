@@ -23,17 +23,24 @@ fn pair_that_differ_by(xs: &[String], count: usize) -> Option<(String, String)> 
 #[cfg(test)]
 mod test {
     use super::*;
+    use lazy_static::lazy_static;
     use std::fs;
+
+    lazy_static! {
+        static ref INPUTS: Vec<String> = fs::read_to_string("data/day2/input")
+            .expect("read input file")
+            .lines()
+            .map(|s| String::from(s))
+            .collect();
+    }
 
     #[test]
     fn part1() {
-        let contents = fs::read_to_string("data/day2/input").expect("read input file");
-        let lines: Vec<String> = contents.lines().map(|s| String::from(s)).collect();
-        let has2 = lines
+        let has2 = INPUTS
             .iter()
             .filter(|s| counts(s.chars()).values().any(|&c| c == 2))
             .count();
-        let has3 = lines
+        let has3 = INPUTS
             .iter()
             .filter(|s| counts(s.chars()).values().any(|&c| c == 3))
             .count();
@@ -42,9 +49,7 @@ mod test {
 
     #[test]
     fn part2() {
-        let contents = fs::read_to_string("data/day2/input").expect("read input file");
-        let lines: Vec<String> = contents.lines().map(|s| String::from(s)).collect();
-        let (a, b) = pair_that_differ_by(&lines, 1).unwrap();
+        let (a, b) = pair_that_differ_by(&INPUTS, 1).unwrap();
         let common: String = a
             .chars()
             .zip(b.chars())

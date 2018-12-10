@@ -17,25 +17,24 @@ fn find_first_duplicate(xs: &[i32]) -> i32 {
 #[cfg(test)]
 mod test {
     use super::*;
+    use lazy_static::lazy_static;
     use std::fs;
+
+    lazy_static! {
+        static ref INPUTS: Vec<i32> = fs::read_to_string("data/day1/input")
+            .expect("read input file")
+            .lines()
+            .map(|s| s.parse().expect("parse line to i32"))
+            .collect();
+    }
 
     #[test]
     fn part1() {
-        let contents = fs::read_to_string("data/day1/input").expect("read input file");
-        let total: i32 = contents
-            .lines()
-            .map(|s| s.parse::<i32>().expect("parse line to i32"))
-            .sum();
-        assert_eq!(total, 402);
+        assert_eq!(INPUTS.iter().cloned().sum::<i32>(), 402);
     }
 
     #[test]
     fn part2() {
-        let contents = fs::read_to_string("data/day1/input").expect("read input file");
-        let inputs: Vec<i32> = contents
-            .lines()
-            .map(|s| s.parse::<i32>().expect("parse line to i32"))
-            .collect();
-        assert_eq!(find_first_duplicate(&inputs), 481);
+        assert_eq!(find_first_duplicate(&INPUTS), 481);
     }
 }
