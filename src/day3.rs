@@ -96,34 +96,30 @@ mod test {
         );
     }
 
+    lazy_static! {
+        static ref INPUTS: Vec<Rectangle> = {
+            let contents = fs::read_to_string("data/day3/input").expect("read input file");
+            contents
+                .lines()
+                .map(|s| s.parse())
+                .collect::<Result<Vec<Rectangle>, _>>()
+                .expect("parse inputs")
+        };
+    }
+
     #[test]
     fn part1() {
-        let contents = fs::read_to_string("data/day3/input").expect("read input file");
-        let rects = contents
-            .lines()
-            .map(|s| s.parse())
-            .collect::<Result<Vec<Rectangle>, _>>()
-            .expect("parse inputs");
-        let tally = coverage(&rects);
+        let tally = coverage(&INPUTS);
         let x2 = tally.values().filter(|&&c| c >= 2).count();
         assert_eq!(x2, 101196);
     }
 
     #[test]
     fn part2() {
-        let contents = fs::read_to_string("data/day3/input").expect("read input file");
-        let rects = contents
-            .lines()
-            .map(|s| s.parse())
-            .collect::<Result<Vec<Rectangle>, _>>()
-            .expect("parse inputs");
-        let tally = coverage(&rects);
-        let no_overlaps = rects
+        let tally = coverage(&INPUTS);
+        let no_overlaps = INPUTS
             .iter()
-            .filter(|&rect| {
-                rect.points()
-                    .all(|pt| tally.get(&pt).filter(|&&c| c <= 1).is_some())
-            })
+            .filter(|&rect| rect.points().all(|pt| *tally.get(&pt).unwrap_or(&0) <= 1))
             .next();
         assert_eq!(no_overlaps.expect("find a no-overlap rectangle").id, 243);
     }
