@@ -31,4 +31,20 @@ mod test {
     fn part1() {
         assert_eq!(compact(INPUT.trim()).len(), 11118);
     }
+
+    #[test]
+    fn part2() {
+        let shortest = (b'A'..=b'Z')
+            .map(|b| b as char)
+            .map(|c| {
+                let input = INPUT
+                    .trim()
+                    .replace(c, "")
+                    .replace(c.to_ascii_lowercase(), "");
+                compact(&input).len()
+            })
+            .min()
+            .unwrap();
+        assert_eq!(shortest, 6948);
+    }
 }
