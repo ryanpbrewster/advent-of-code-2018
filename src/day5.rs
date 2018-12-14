@@ -1,5 +1,4 @@
-fn compact(input: &str) -> String {
-    let mut chars: Vec<char> = input.chars().collect();
+fn compact_length(mut chars: Vec<u8>) -> usize {
     let mut i = 0;
     while i + 1 < chars.len() {
         if chars[i].to_ascii_lowercase() == chars[i + 1].to_ascii_lowercase()
@@ -14,7 +13,7 @@ fn compact(input: &str) -> String {
             i += 1;
         }
     }
-    chars.into_iter().collect()
+    chars.len()
 }
 
 #[cfg(test)]
@@ -24,24 +23,25 @@ mod test {
     use std::fs;
 
     lazy_static! {
-        static ref INPUT: String = fs::read_to_string("data/day5/input").expect("read input file");
+        static ref INPUT: Vec<u8> = {
+            let mut raw = fs::read("data/day5/input").expect("read input file");
+            raw.retain(|&b| (b'a' <= b && b <= b'z') || (b'A' <= b && b <= b'Z'));
+            raw
+        };
     }
 
     #[test]
     fn part1() {
-        assert_eq!(compact(INPUT.trim()).len(), 11118);
+        assert_eq!(compact_length(INPUT.clone()), 11118);
     }
 
     #[test]
     fn part2() {
         let shortest = (b'A'..=b'Z')
-            .map(|b| b as char)
-            .map(|c| {
-                let input = INPUT
-                    .trim()
-                    .replace(c, "")
-                    .replace(c.to_ascii_lowercase(), "");
-                compact(&input).len()
+            .map(|r| {
+                let mut input = INPUT.clone();
+                input.drain_filter(|&mut b| b == r || b == r.to_ascii_lowercase());
+                compact_length(input)
             })
             .min()
             .unwrap();
