@@ -5,8 +5,8 @@ use std::collections::{BinaryHeap, HashMap};
 use std::str::FromStr;
 
 struct Dependency {
-    before: String,
-    after: String,
+    before: u8,
+    after: u8,
 }
 lazy_static! {
     // Example: Step B must be finished before step C can begin.
@@ -20,42 +20,39 @@ impl FromStr for Dependency {
             .captures(s)
             .ok_or(format!("could not parse {}", s))?;
         Ok(Dependency {
-            before: String::from(&cap["before"]),
-            after: String::from(&cap["after"]),
+            before: cap["before"].as_bytes()[0],
+            after: cap["after"].as_bytes()[0],
         })
     }
 }
 
-fn topo_sort(dependencies: &[Dependency]) -> Vec<String> {
-    let mut graph: HashMap<String, Vec<String>> = HashMap::new();
-    let mut in_degree: HashMap<String, usize> = HashMap::new();
+fn topo_sort(dependencies: &[Dependency]) -> Vec<u8> {
+    let mut graph: HashMap<u8, Vec<u8>> = HashMap::new();
+    let mut in_degree: HashMap<u8, usize> = HashMap::new();
     for dep in dependencies {
         // Add the edge to the graph.
-        graph
-            .entry(dep.before.clone())
-            .or_default()
-            .push(dep.after.clone());
+        graph.entry(dep.before).or_default().push(dep.after);
         // Add up the in-degrees
-        in_degree.entry(dep.before.clone()).or_default();
-        *in_degree.entry(dep.after.clone()).or_default() += 1;
+        in_degree.entry(dep.before).or_default();
+        *in_degree.entry(dep.after).or_default() += 1;
     }
 
-    let mut frontier: BinaryHeap<Reverse<String>> = BinaryHeap::new();
-    for (id, &count) in in_degree.iter() {
+    let mut frontier: BinaryHeap<Reverse<u8>> = BinaryHeap::new();
+    for (&id, &count) in in_degree.iter() {
         if count == 0 {
-            frontier.push(Reverse(id.clone()));
+            frontier.push(Reverse(id));
         }
     }
 
     let mut ordered = Vec::new();
     while let Some(Reverse(cur)) = frontier.pop() {
-        ordered.push(cur.clone());
+        ordered.push(cur);
         for targets in graph.get(&cur) {
-            for target in targets {
-                let count = in_degree.get_mut(target).unwrap();
+            for &target in targets {
+                let count = in_degree.get_mut(&target).unwrap();
                 *count -= 1;
                 if *count == 0 {
-                    frontier.push(Reverse(target.clone()));
+                    frontier.push(Reverse(target));
                 }
             }
         }
@@ -84,7 +81,7 @@ mod test {
     fn part1() {
         let order = topo_sort(&INPUT);
         assert_eq!(
-            order.into_iter().collect::<String>(),
+            String::from_utf8(order).unwrap(),
             "IOFSJQDUWAPXELNVYZMHTBCRGK"
         );
     }
