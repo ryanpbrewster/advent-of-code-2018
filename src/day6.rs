@@ -1,6 +1,6 @@
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::str::FromStr;
 
 #[derive(Hash, Eq, PartialEq, Copy, Clone, Debug)]
@@ -138,6 +138,31 @@ impl BoundingBox {
     }
 }
 
+fn region_by_predicate<P>(points: &[Point], pred: P) -> HashSet<Point>
+where
+    P: Fn(Point, &[Point]) -> bool,
+{
+    // Seed the queue with all the points
+    let mut q = VecDeque::new();
+    for &p in points {
+        q.push_back(p);
+    }
+
+    let mut visited = HashSet::new();
+    while let Some(cur) = q.pop_front() {
+        if visited.contains(&cur) {
+            continue;
+        }
+        if pred(cur, points) {
+            visited.insert(cur);
+            for n in cur.neighbors() {
+                q.push_back(n);
+            }
+        }
+    }
+    visited
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -184,5 +209,13 @@ mod test {
     fn part1() {
         let areas = regions(&INPUT);
         assert_eq!(*areas.values().max().unwrap(), 3276);
+    }
+
+    #[test]
+    fn part2() {
+        let region = region_by_predicate(&INPUT, |cur, pts| {
+            pts.iter().map(|p| cur.distance(p)).sum::<usize>() < 10_000
+        });
+        assert_eq!(region.len(), 38380);
     }
 }
