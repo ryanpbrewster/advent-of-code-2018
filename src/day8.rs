@@ -3,26 +3,38 @@ struct Node {
     children: Vec<Node>,
 }
 impl Node {
-    fn from_iter<'a, I>(value: &mut I) -> Result<Self, ()>
+    fn from_iter<I>(value: &mut I) -> Option<Node>
     where
-        I: Iterator<Item = &'a usize>,
+        I: Iterator<Item = usize>,
     {
-        let num_children = *value.next().ok_or(())?;
-        let num_metadata = *value.next().ok_or(())?;
+        let num_children = value.next()?;
+        let num_metadata = value.next()?;
         let mut children = Vec::new();
         for _ in 0..num_children {
             children.push(Node::from_iter(value)?);
         }
         let mut metadata = Vec::new();
         for _ in 0..num_metadata {
-            metadata.push(*value.next().ok_or(())?);
+            metadata.push(value.next()?);
         }
-        Ok(Node { metadata, children })
+        Some(Node { metadata, children })
     }
 
     fn simple_sum(&self) -> usize {
         self.metadata.iter().sum::<usize>()
             + self.children.iter().map(|c| c.simple_sum()).sum::<usize>()
+    }
+
+    fn complex_sum(&self) -> usize {
+        if self.children.is_empty() {
+            self.metadata.iter().sum()
+        } else {
+            let rec: Vec<usize> = self.children.iter().map(|c| c.complex_sum()).collect();
+            self.metadata
+                .iter()
+                .filter_map(|idx| rec.get(idx - 1))
+                .sum()
+        }
     }
 }
 
@@ -42,7 +54,7 @@ mod test {
     #[test]
     fn smoke() {
         let input = vec![2, 3, 0, 3, 10, 11, 12, 1, 1, 0, 1, 99, 2, 1, 1, 2];
-        let mut iter = input.iter();
+        let mut iter = input.iter().cloned();
         let node = Node::from_iter(&mut iter).unwrap();
 
         assert_eq!(node.simple_sum(), 138);
@@ -50,8 +62,15 @@ mod test {
 
     #[test]
     fn part1() {
-        let mut iter = INPUT.iter();
+        let mut iter = INPUT.iter().cloned();
         let node = Node::from_iter(&mut iter).unwrap();
         assert_eq!(node.simple_sum(), 42254);
+    }
+
+    #[test]
+    fn part2() {
+        let mut iter = INPUT.iter().cloned();
+        let node = Node::from_iter(&mut iter).unwrap();
+        assert_eq!(node.complex_sum(), 25007);
     }
 }
