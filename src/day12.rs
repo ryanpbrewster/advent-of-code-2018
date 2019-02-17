@@ -63,4 +63,20 @@ mod test {
         }
         assert_eq!(state.alive.iter().sum::<i32>(), 2140);
     }
+
+    #[test]
+    fn part2() {
+        let mut state = INPUT.clone();
+
+        let warmup = 100;
+        for _ in 0..warmup {
+            state.step();
+        }
+        // Hope and pray that this exhibits some simple linear growth.
+        let v0 = state.alive.iter().sum::<i32>() as i64;
+        state.step();
+        let v1 = state.alive.iter().sum::<i32>() as i64;
+        let v_50b = v0 + (50_000_000_000 - warmup) * (v1 - v0);
+        assert_eq!(v_50b, 1900000000384);
+    }
 }
